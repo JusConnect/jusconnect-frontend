@@ -1,0 +1,10 @@
+{
+  "flutter": "stable",
+  "flavors": {
+    "development": "stable",
+    "production": "stable"
+  },
+  "runPubGetOnSdkChanges": true,
+  "updateVscodeSettings": true,
+  "updateGitIgnore": true
+}

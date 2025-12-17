@@ -24,3 +24,7 @@ class NotFoundFailure extends Failure {
 class DuplicateFailure extends Failure {
   const DuplicateFailure(super.message);
 }
+
+class ServerFailure extends Failure {
+  const ServerFailure([super.message = 'Erro no servidor']);
+}

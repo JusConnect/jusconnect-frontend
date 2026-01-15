@@ -13,32 +13,14 @@ class LawyerRepositoryImpl implements LawyerRepository {
 
   @override
   Future<Either<Failure, LawyerEntity>> registerLawyer({
-    required String name,
-    required String cpf,
-    required String email,
-    required String phone,
-    required String password,
-    required String areaOfExpertise,
-    required String description,
-    String? videoUrl,
+    required LawyerModel lawyer,
   }) async {
     try {
-      final lawyer = await dataSource.registerLawyer(
-        name: name,
-        cpf: cpf,
-        email: email,
-        phone: phone,
-        password: password,
-        areaOfExpertise: areaOfExpertise,
-        description: description,
-        videoUrl: videoUrl,
-      );
-      return Right(lawyer);
+      final result = await dataSource.registerLawyer(lawyer: lawyer);
+
+      return result.fold((failure) => Left(failure), (lawyer) => Right(lawyer));
     } catch (e) {
-      if (e.toString().contains('já cadastrado')) {
-        return Left(DuplicateFailure('CPF já cadastrado'));
-      }
-      return Left(ServerFailure());
+      return Left(ServerFailure('Erro ao registrar advogado: ${e.toString()}'));
     }
   }
 
@@ -47,89 +29,114 @@ class LawyerRepositoryImpl implements LawyerRepository {
     CredentialsEntity credentials,
   ) async {
     try {
-      final lawyer = await dataSource.login(
-        credentials.cpf,
-        credentials.password,
-      );
-
-      if (lawyer == null) {
-        return Left(AuthFailure('CPF ou senha inválidos'));
+      final result = await dataSource.login(credentials);
+      final failure = result.fold<Failure?>((l) => l, (_) => null);
+      if (failure != null) {
+        return Left(failure);
       }
 
-      return Right(lawyer);
+      final lawyerResult = await dataSource.getCurrentLawyer();
+
+      return lawyerResult.fold(
+        (failure) => Left(failure),
+        (lawyer) => Right(lawyer),
+      );
     } catch (e) {
-      return Left(AuthFailure('Erro ao fazer login'));
+      return Left(AuthFailure('Erro ao fazer login: ${e.toString()}'));
     }
   }
 
   @override
   Future<Either<Failure, void>> logout() async {
     try {
-      await dataSource.logout();
-      return const Right(null);
+      return await dataSource.logout();
     } catch (e) {
-      return Left(AuthFailure('Erro ao fazer logout'));
+      return Left(AuthFailure('Erro ao fazer logout: ${e.toString()}'));
     }
   }
 
   @override
   Future<Either<Failure, LawyerEntity?>> getCurrentLawyer() async {
     try {
-      final lawyer = await dataSource.getCurrentLawyer();
-      return Right(lawyer);
+      final lawyerResult = await dataSource.getCurrentLawyer();
+
+      return lawyerResult.fold(
+        (failure) => Left(failure),
+        (lawyer) => Right(lawyer),
+      );
     } catch (e) {
-      return Left(AuthFailure('Erro ao buscar advogado atual'));
+      return Left(
+        AuthFailure('Erro ao buscar advogado atual: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, LawyerEntity>> getProfile(String id) async {
+  Future<Either<Failure, LawyerEntity>> getProfile(int id) async {
     try {
-      final lawyer = await dataSource.getLawyerById(id);
+      final lawyerResult = await dataSource.getCurrentLawyer();
 
-      if (lawyer == null) {
-        return Left(NotFoundFailure('Advogado não encontrado'));
-      }
-
-      return Right(lawyer);
+      return lawyerResult.fold(
+        (failure) => Left(failure),
+        (lawyer) => Right(lawyer),
+      );
     } catch (e) {
-      return Left(ServerFailure('Erro ao buscar perfil'));
+      return Left(ServerFailure('Erro ao buscar perfil: ${e.toString()}'));
     }
   }
 
   @override
   Future<Either<Failure, LawyerEntity>> updateProfile({
-    required String id,
-    required String name,
-    required String email,
-    required String phone,
-    required String areaOfExpertise,
-    required String description,
-    String? videoUrl,
+    required LawyerModel lawyer,
   }) async {
     try {
-      final currentLawyer = await dataSource.getLawyerById(id);
+      final currentLawyerResult = await dataSource.getCurrentLawyer();
+
+      final currentLawyer = currentLawyerResult.fold<LawyerModel?>(
+        (l) => null,
+        (r) => r,
+      );
 
       if (currentLawyer == null) {
         return Left(NotFoundFailure('Advogado não encontrado'));
       }
 
-      final updatedLawyer = LawyerModel(
-        id: id,
-        name: name,
-        cpf: currentLawyer.cpf,
-        email: email,
-        phone: phone,
-        areaOfExpertise: areaOfExpertise,
-        description: description,
-        videoUrl: videoUrl,
-        createdAt: currentLawyer.createdAt,
+      final updatedLawyer = currentLawyer.copyWith(
+        name: lawyer.name,
+        email: lawyer.email,
+        phone: lawyer.phone,
+        areaOfExpertise: lawyer.areaOfExpertise,
+        description: lawyer.description,
+        videoUrl: lawyer.videoUrl,
       );
 
-      final result = await dataSource.updateLawyer(updatedLawyer);
-      return Right(result);
+      final updateResult = await dataSource.updateLawyer(updatedLawyer);
+      final updateFailure = updateResult.fold<Failure?>((l) => l, (_) => null);
+      if (updateFailure != null) {
+        return Left(updateFailure);
+      }
+
+      final profileResult = await dataSource.getCurrentLawyer();
+      return profileResult.fold(
+        (failure) => Left(failure),
+        (lawyer) => Right(lawyer),
+      );
     } catch (e) {
-      return Left(ServerFailure('Erro ao atualizar perfil'));
+      return Left(ServerFailure('Erro ao atualizar perfil: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<LawyerEntity>>> getAllLawyers() async {
+    try {
+      final lawyersResult = await dataSource.getAllLawyers();
+
+      return lawyersResult.fold(
+        (failure) => Left(failure),
+        (lawyers) => Right(lawyers.cast<LawyerEntity>()),
+      );
+    } catch (e) {
+      return Left(ServerFailure('Erro ao buscar advogados: ${e.toString()}'));
     }
   }
 }

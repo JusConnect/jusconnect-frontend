@@ -3,7 +3,7 @@ import 'package:jusconnect/core/errors/failures.dart';
 import 'package:jusconnect/features/auth/domain/repositories/auth_repository.dart';
 
 class LogoutUseCase {
-  final AuthRepository repository;
+  final IAuthRepository repository;
 
   LogoutUseCase(this.repository);
 

@@ -6,24 +6,19 @@ import 'package:jusconnect/features/auth/domain/entities/user_entity.dart';
 import 'package:jusconnect/features/profile/domain/repositories/profile_repository.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
-  final AuthLocalDataSourceImpl dataSource;
+  final AuthDataSourceImpl dataSource;
 
   ProfileRepositoryImpl(this.dataSource);
 
   @override
-  Future<Either<Failure, UserEntity>> getProfile(String userId) async {
+  Future<Either<Failure, UserEntity>> getProfile(int userId) async {
     try {
       final currentUser = await dataSource.getCurrentUser();
 
-      if (currentUser == null) {
-        return const Left(NotFoundFailure('Usuário não encontrado'));
-      }
-
-      if (currentUser.id != userId) {
-        return const Left(AuthFailure('Não autorizado'));
-      }
-
-      return Right(currentUser);
+      return currentUser.fold(
+        (failure) => Left(failure),
+        (userModel) => Right(userModel.toEntity()),
+      );
     } catch (e) {
       return Left(AuthFailure('Erro ao buscar perfil: ${e.toString()}'));
     }
@@ -32,20 +27,20 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<Either<Failure, UserEntity>> updateProfile(UserEntity user) async {
     try {
-      final currentUser = await dataSource.getCurrentUser();
-
-      if (currentUser == null) {
-        return const Left(NotFoundFailure('Usuário não encontrado'));
-      }
-
-      if (currentUser.id != user.id) {
-        return const Left(AuthFailure('Não autorizado'));
-      }
-
       final updatedUser = UserModel.fromEntity(user);
-      await dataSource.saveUser(updatedUser);
+      final updateResult = await dataSource.updateUser(updatedUser);
 
-      return Right(updatedUser);
+      if (updateResult.isLeft()) {
+        final result = updateResult.fold<Failure?>((l) => (l), (r) => (null));
+        if (result != null) return Left(result);
+      }
+
+      final profileResult = await dataSource.getCurrentUser();
+
+      return profileResult.fold(
+        (failure) => Left(failure),
+        (userModel) => Right(userModel.toEntity()),
+      );
     } catch (e) {
       return Left(AuthFailure('Erro ao atualizar perfil: ${e.toString()}'));
     }

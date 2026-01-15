@@ -4,7 +4,7 @@ import 'package:jusconnect/features/auth/domain/entities/user_entity.dart';
 import 'package:jusconnect/features/auth/domain/repositories/auth_repository.dart';
 
 class GetCurrentUserUseCase {
-  final AuthRepository repository;
+  final IAuthRepository repository;
 
   GetCurrentUserUseCase(this.repository);
 

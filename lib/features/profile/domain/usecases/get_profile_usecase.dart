@@ -8,7 +8,7 @@ class GetProfileUseCase {
 
   GetProfileUseCase(this.repository);
 
-  Future<Either<Failure, UserEntity>> call(String userId) async {
+  Future<Either<Failure, UserEntity>> call(int userId) async {
     return await repository.getProfile(userId);
   }
 }

@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 class UserEntity extends Equatable {
-  final String id;
+  final int id;
   final String name;
   final String cpf;
   final String email;
@@ -16,7 +16,7 @@ class UserEntity extends Equatable {
   });
 
   UserEntity copyWith({
-    String? id,
+    int? id,
     String? name,
     String? cpf,
     String? email,

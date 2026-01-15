@@ -87,6 +87,19 @@ class _LawyerRegisterPageState extends ConsumerState<LawyerRegisterPage> {
                       _buildSubmitButton(authState),
                       const SizedBox(height: 16),
                       _buildLoginLink(),
+
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushReplacementNamed('/');
+                        },
+                        child: Text(
+                          'Voltar para seleção de tipo',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: AppColors.primaryColor,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),

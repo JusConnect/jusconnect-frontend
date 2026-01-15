@@ -6,8 +6,8 @@ import 'package:jusconnect/features/auth/domain/entities/credentials_entity.dart
 import 'package:jusconnect/features/auth/domain/entities/user_entity.dart';
 import 'package:jusconnect/features/auth/domain/repositories/auth_repository.dart';
 
-class AuthRepositoryImpl implements AuthRepository {
-  final AuthLocalDataSourceImpl dataSource;
+class AuthRepositoryImpl implements IAuthRepository {
+  final AuthDataSourceImpl dataSource;
 
   AuthRepositoryImpl(this.dataSource);
 
@@ -20,21 +20,20 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
-      final existingUser = await dataSource.getUserByCpf(email);
-      if (existingUser != null) {
-        return const Left(DuplicateFailure('Email já cadastrado'));
-      }
-
       final user = UserModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: 0,
         name: name,
         cpf: cpf,
         email: email,
         phone: phone,
       );
 
-      await dataSource.saveUserWithPassword(user, password);
-      return Right(user);
+      final result = await dataSource.createUser(user, password);
+
+      return result.fold(
+        (failure) => Left(failure),
+        (user) => Right(user.toEntity()),
+      );
     } catch (e) {
       return Left(AuthFailure('Erro ao registrar usuário: ${e.toString()}'));
     }
@@ -45,23 +44,18 @@ class AuthRepositoryImpl implements AuthRepository {
     CredentialsEntity credentials,
   ) async {
     try {
-      final user = await dataSource.getUserByCpf(credentials.cpf);
-
-      if (user == null) {
-        return const Left(AuthFailure('Email ou senha incorretos'));
+      final result = await dataSource.login(credentials);
+      final failure = result.fold<Failure?>((l) => l, (_) => null);
+      if (failure != null) {
+        return Left(failure);
       }
 
-      final isPasswordValid = await dataSource.validatePassword(
-        credentials.cpf,
-        credentials.password,
+      final userResult = await dataSource.getCurrentUser();
+
+      return userResult.fold(
+        (failure) => Left(failure),
+        (userModel) => Right(userModel.toEntity()),
       );
-
-      if (!isPasswordValid) {
-        return const Left(AuthFailure('Email ou senha incorretos'));
-      }
-
-      await dataSource.saveUser(user);
-      return Right(user);
     } catch (e) {
       return Left(AuthFailure('Erro ao fazer login: ${e.toString()}'));
     }
@@ -70,18 +64,54 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, void>> logout() async {
     try {
-      await dataSource.removeUser();
-      return const Right(null);
+      return await dataSource.logout();
     } catch (e) {
       return Left(AuthFailure('Erro ao fazer logout: ${e.toString()}'));
     }
   }
 
   @override
-  Future<Either<Failure, UserEntity?>> getCurrentUser() async {
+  Future<Either<Failure, UserEntity>> getCurrentUser() async {
     try {
-      final user = await dataSource.getCurrentUser();
-      return Right(user);
+      final userResult = await dataSource.getCurrentUser();
+
+      return userResult.fold(
+        (failure) => Left(failure),
+        (userModel) => Right(userModel.toEntity()),
+      );
+    } catch (e) {
+      return Left(AuthFailure('Erro ao buscar usuário: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> updateUser(UserModel user) async {
+    try {
+      final currentUserResult = await dataSource.getCurrentUser();
+      final failure = currentUserResult.fold<Failure?>((l) => l, (_) => null);
+      if (failure != null) {
+        return Left(failure);
+      }
+
+      final currentUser = currentUserResult.fold<UserModel?>(
+        (l) => null,
+        (r) => r,
+      );
+
+      user = currentUser!.copyWith(
+        email: user.email,
+        name: user.name,
+        phone: user.phone,
+      );
+
+      final userResult = await dataSource.updateUser(user);
+
+      final updateFailure = userResult.fold<Failure?>((l) => l, (_) => null);
+      if (updateFailure != null) {
+        return Left(updateFailure);
+      }
+
+      return await getCurrentUser();
     } catch (e) {
       return Left(AuthFailure('Erro ao buscar usuário: ${e.toString()}'));
     }

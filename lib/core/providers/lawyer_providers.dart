@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:jusconnect/core/providers/app_providers.dart';
 import 'package:jusconnect/features/lawyer/data/datasources/lawyer_local_datasource.dart';
 import 'package:jusconnect/features/lawyer/data/repositories/lawyer_repository_impl.dart';
 import 'package:jusconnect/features/lawyer/domain/repositories/lawyer_repository.dart';
+import 'package:jusconnect/features/lawyer/domain/usecases/get_all_lawyers_usecase.dart';
 import 'package:jusconnect/features/lawyer/domain/usecases/get_current_lawyer_usecase.dart';
 import 'package:jusconnect/features/lawyer/domain/usecases/get_lawyer_profile_usecase.dart';
 import 'package:jusconnect/features/lawyer/domain/usecases/login_lawyer_usecase.dart';
@@ -12,7 +14,8 @@ import 'package:jusconnect/features/lawyer/domain/usecases/update_lawyer_profile
 final lawyerLocalDataSourceProvider = Provider<LawyerLocalDataSourceImpl>((
   ref,
 ) {
-  return LawyerLocalDataSourceImpl();
+  final networkHandler = ref.watch(networkHandlerProvider);
+  return LawyerLocalDataSourceImpl(networkHandler);
 });
 
 final lawyerRepositoryProvider = Provider<LawyerRepository>((ref) {
@@ -55,3 +58,8 @@ final updateLawyerProfileUseCaseProvider = Provider<UpdateLawyerProfileUseCase>(
     return UpdateLawyerProfileUseCase(repository);
   },
 );
+
+final getAllLawyersUseCaseProvider = Provider<GetAllLawyersUseCase>((ref) {
+  final repository = ref.read(lawyerRepositoryProvider);
+  return GetAllLawyersUseCase(repository);
+});

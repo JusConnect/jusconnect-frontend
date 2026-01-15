@@ -8,7 +8,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
 
   ProfileNotifier(this.ref) : super(ProfileInitial());
 
-  Future<void> loadProfile(String userId) async {
+  Future<void> loadProfile(int userId) async {
     state = ProfileLoading();
 
     final useCase = ref.read(getProfileUseCaseProvider);

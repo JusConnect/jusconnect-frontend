@@ -7,7 +7,7 @@ class LawyerProfileNotifier extends StateNotifier<LawyerProfileState> {
 
   LawyerProfileNotifier(this.ref) : super(LawyerProfileInitial());
 
-  Future<void> loadProfile(String id) async {
+  Future<void> loadProfile(int id) async {
     state = LawyerProfileLoading();
 
     final useCase = ref.read(getLawyerProfileUseCaseProvider);
@@ -20,7 +20,7 @@ class LawyerProfileNotifier extends StateNotifier<LawyerProfileState> {
   }
 
   Future<void> updateProfile({
-    required String id,
+    required int id,
     required String name,
     required String email,
     required String phone,

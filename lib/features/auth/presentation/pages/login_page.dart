@@ -160,6 +160,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
           ),
         ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pushReplacementNamed('/');
+          },
+          child: Text(
+            'Voltar para seleção de tipo',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: AppColors.primaryColor,
+            ),
+          ),
+        ),
       ],
     );
   }

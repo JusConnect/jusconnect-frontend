@@ -5,7 +5,7 @@ import 'package:jusconnect/features/auth/domain/entities/user_entity.dart';
 import 'package:jusconnect/features/auth/domain/repositories/auth_repository.dart';
 
 class LoginUseCase {
-  final AuthRepository repository;
+  final IAuthRepository repository;
 
   LoginUseCase(this.repository);
 

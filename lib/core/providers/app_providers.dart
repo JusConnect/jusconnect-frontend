@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jusconnect/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:jusconnect/features/auth/data/repositories/auth_repository_impl.dart';
@@ -11,11 +12,24 @@ import 'package:jusconnect/features/profile/domain/repositories/profile_reposito
 import 'package:jusconnect/features/profile/domain/usecases/get_profile_usecase.dart';
 import 'package:jusconnect/features/profile/domain/usecases/update_profile_usecase.dart';
 
-final authLocalDataSourceProvider = Provider<AuthLocalDataSourceImpl>((ref) {
-  return AuthLocalDataSourceImpl();
+final networkHandlerProvider = Provider<Dio>((ref) {
+  return Dio(
+    BaseOptions(
+      baseUrl: 'http://localhost:8080',
+      validateStatus: (status) {
+        return true;
+      },
+      receiveDataWhenStatusError: true,
+    ),
+  );
 });
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
+final authLocalDataSourceProvider = Provider<AuthDataSourceImpl>((ref) {
+  final networkHandler = ref.watch(networkHandlerProvider);
+  return AuthDataSourceImpl(networkHandler);
+});
+
+final authRepositoryProvider = Provider<IAuthRepository>((ref) {
   final dataSource = ref.watch(authLocalDataSourceProvider);
   return AuthRepositoryImpl(dataSource);
 });

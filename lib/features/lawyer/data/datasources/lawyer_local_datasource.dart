@@ -1,118 +1,145 @@
+import 'package:dio/dio.dart';
 import 'package:jusconnect/features/lawyer/data/models/lawyer_model.dart';
+import 'package:dartz/dartz.dart';
+import 'package:jusconnect/core/errors/failures.dart';
+import 'package:jusconnect/features/auth/domain/entities/credentials_entity.dart';
 
-abstract class LawyerLocalDataSource {
-  Future<LawyerModel> registerLawyer({
-    required String name,
-    required String cpf,
-    required String email,
-    required String phone,
-    required String password,
-    required String areaOfExpertise,
-    required String description,
-    String? videoUrl,
+abstract class ILawyerDataSource {
+  Future<Either<Failure, LawyerModel>> registerLawyer({
+    required LawyerModel lawyer,
   });
 
-  Future<LawyerModel?> login(String cpf, String password);
+  Future<Either<Failure, void>> login(CredentialsEntity credentials);
 
-  Future<void> logout();
+  Future<Either<Failure, void>> logout();
 
-  Future<LawyerModel?> getCurrentLawyer();
+  Future<Either<Failure, LawyerModel>> getCurrentLawyer();
 
-  Future<LawyerModel?> getLawyerById(String id);
+  Future<Either<Failure, void>> updateLawyer(LawyerModel lawyer);
 
-  Future<LawyerModel> updateLawyer(LawyerModel lawyer);
+  Future<Either<Failure, List<LawyerModel>>> getAllLawyers({
+    String? lawyerArea,
+    int? monthsInPlatform,
+  });
 }
 
-class LawyerLocalDataSourceImpl implements LawyerLocalDataSource {
-  final Map<String, LawyerModel> _lawyers = {};
-  final Map<String, String> _credentials = {};
-  String? _currentLawyerId;
+class LawyerLocalDataSourceImpl implements ILawyerDataSource {
+  String? _authToken;
+  final Dio _dio;
+
+  LawyerLocalDataSourceImpl(this._dio);
 
   @override
-  Future<LawyerModel> registerLawyer({
-    required String name,
-    required String cpf,
-    required String email,
-    required String phone,
-    required String password,
-    required String areaOfExpertise,
-    required String description,
-    String? videoUrl,
+  Future<Either<Failure, LawyerModel>> registerLawyer({
+    required LawyerModel lawyer,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      final data = lawyer.toJson();
 
-    if (_credentials.containsKey(cpf)) {
-      throw Exception('CPF já cadastrado');
+      print(data);
+
+      var result = await _dio.post('/advogados', data: data);
+
+      if (result.statusCode == 201) {
+        return Right(LawyerModel.fromJson(result.data));
+      }
+
+      return Left(AuthFailure('Erro ao criar advogado ${result.data}'));
+    } catch (e) {
+      return Left(AuthFailure('Erro ao criar advogado $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> login(CredentialsEntity credentials) async {
+    try {
+      var result = await _dio.post('/auth/login', data: credentials.toJson());
+      if (result.statusCode == 200) {
+        _authToken = result.data['token'];
+        return Right(null);
+      }
+      return Left(AuthFailure('Erro ao fazer login ${result.data}'));
+    } catch (e) {
+      return Left(AuthFailure('Erro ao fazer login $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> logout() async {
+    _authToken = null;
+    return Right(null);
+  }
+
+  @override
+  Future<Either<Failure, LawyerModel>> getCurrentLawyer() async {
+    if (_authToken == null) {
+      return Left(AuthFailure("Advogado não autenticado"));
     }
 
-    final lawyer = LawyerModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: name,
-      cpf: cpf,
-      email: email,
-      phone: phone,
-      areaOfExpertise: areaOfExpertise,
-      description: description,
-      videoUrl: videoUrl,
-      createdAt: DateTime.now(),
-    );
+    try {
+      var result = await _dio.get(
+        '/advogados/me',
+        options: Options(headers: {'Authorization': 'Bearer $_authToken'}),
+      );
 
-    _lawyers[lawyer.id] = lawyer;
-    _credentials[cpf] = password;
-    _currentLawyerId = lawyer.id;
+      if (result.statusCode == 200) {
+        return Right(LawyerModel.fromJson(result.data));
+      }
 
-    return lawyer;
+      return Left(AuthFailure('Advogado não encontrado'));
+    } catch (e) {
+      return Left(AuthFailure('Erro ao buscar advogado $e'));
+    }
   }
 
   @override
-  Future<LawyerModel?> login(String cpf, String password) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    if (_credentials[cpf] != password) {
-      return null;
+  Future<Either<Failure, void>> updateLawyer(LawyerModel lawyer) async {
+    if (_authToken == null) {
+      return Left(AuthFailure('Advogado não autenticado'));
     }
 
-    final lawyer = _lawyers.values.firstWhere(
-      (l) => l.cpf == cpf,
-      orElse: () => throw Exception('Advogado não encontrado'),
-    );
+    try {
+      var result = await _dio.put(
+        '/advogados/me',
+        data: lawyer.toJson(),
+        options: Options(headers: {'Authorization': 'Bearer $_authToken'}),
+      );
 
-    _currentLawyerId = lawyer.id;
-    return lawyer;
-  }
+      if (result.statusCode == 200 || result.statusCode == 201) {
+        return Right(null);
+      }
 
-  @override
-  Future<void> logout() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    _currentLawyerId = null;
-  }
-
-  @override
-  Future<LawyerModel?> getCurrentLawyer() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    if (_currentLawyerId == null) {
-      return null;
+      return Left(AuthFailure('Erro ao atualizar advogado ${result.data}'));
+    } catch (e) {
+      return Left(AuthFailure('Erro ao atualizar advogado $e'));
     }
-
-    return _lawyers[_currentLawyerId];
   }
 
   @override
-  Future<LawyerModel?> getLawyerById(String id) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _lawyers[id];
-  }
+  Future<Either<Failure, List<LawyerModel>>> getAllLawyers({
+    String? lawyerArea,
+    int? monthsInPlatform,
+  }) async {
+    try {
+      var result = await _dio.get(
+        '/advogados',
+        queryParameters: {
+          'areaAtuacao': lawyerArea,
+          'tempoMinMeses': monthsInPlatform,
+        },
+      );
 
-  @override
-  Future<LawyerModel> updateLawyer(LawyerModel lawyer) async {
-    await Future.delayed(const Duration(milliseconds: 500));
+      if (result.statusCode == 200) {
+        final List<dynamic> data = result.data as List<dynamic>;
+        final lawyers = data
+            .map((json) => LawyerModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+        return Right(lawyers);
+      }
 
-    if (!_lawyers.containsKey(lawyer.id)) {
-      throw Exception('Advogado não encontrado');
+      return Left(ServerFailure('Erro ao buscar advogados'));
+    } catch (e) {
+      return Left(ServerFailure('Erro ao buscar advogados: $e'));
     }
-
-    _lawyers[lawyer.id] = lawyer;
-    return lawyer;
   }
 }

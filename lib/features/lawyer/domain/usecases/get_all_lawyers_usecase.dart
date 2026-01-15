@@ -3,12 +3,12 @@ import 'package:jusconnect/core/errors/failures.dart';
 import 'package:jusconnect/features/lawyer/domain/entities/lawyer_entity.dart';
 import 'package:jusconnect/features/lawyer/domain/repositories/lawyer_repository.dart';
 
-class GetLawyerProfileUseCase {
+class GetAllLawyersUseCase {
   final LawyerRepository repository;
 
-  GetLawyerProfileUseCase(this.repository);
+  GetAllLawyersUseCase(this.repository);
 
-  Future<Either<Failure, LawyerEntity>> call(int id) {
-    return repository.getProfile(id);
+  Future<Either<Failure, List<LawyerEntity>>> call() async {
+    return await repository.getAllLawyers();
   }
 }

@@ -204,6 +204,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
           ),
         ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pushReplacementNamed('/');
+          },
+          child: Text(
+            'Voltar para seleção de tipo',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: AppColors.primaryColor,
+            ),
+          ),
+        ),
       ],
     );
   }

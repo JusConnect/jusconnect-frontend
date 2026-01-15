@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 class LawyerEntity extends Equatable {
-  final String id;
+  final int id;
   final String name;
   final String cpf;
   final String email;
@@ -9,7 +9,6 @@ class LawyerEntity extends Equatable {
   final String areaOfExpertise;
   final String description;
   final String? videoUrl;
-  final DateTime createdAt;
 
   const LawyerEntity({
     required this.id,
@@ -20,7 +19,6 @@ class LawyerEntity extends Equatable {
     required this.areaOfExpertise,
     required this.description,
     this.videoUrl,
-    required this.createdAt,
   });
 
   @override
@@ -33,6 +31,5 @@ class LawyerEntity extends Equatable {
     areaOfExpertise,
     description,
     videoUrl,
-    createdAt,
   ];
 }

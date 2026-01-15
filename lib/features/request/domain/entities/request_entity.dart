@@ -22,8 +22,8 @@ class RequestEntity extends Equatable {
   final String description;
   final bool public;
   final String status;
-  final int lawyerId;
-  final String lawyerName;
+  final int? lawyerId;
+  final String? lawyerName;
   final int clientId;
   final String clientName;
   final String clientEmail;
@@ -36,8 +36,8 @@ class RequestEntity extends Equatable {
     required this.description,
     required this.public,
     required this.status,
-    required this.lawyerId,
-    required this.lawyerName,
+    this.lawyerId,
+    this.lawyerName,
     required this.clientId,
     required this.clientName,
     required this.clientEmail,
@@ -46,13 +46,18 @@ class RequestEntity extends Equatable {
     this.responseDateTime,
   });
 
+  // Helper to check if request has an assigned lawyer
+  bool get hasLawyer => lawyerId != null;
+
   RequestEntity copyWith({
     int? id,
     String? description,
     bool? public,
     String? status,
     int? lawyerId,
+    bool setLawyerIdNull = false,
     String? lawyerName,
+    bool setLawyerNameNull = false,
     int? clientId,
     String? clientName,
     String? clientEmail,
@@ -65,8 +70,8 @@ class RequestEntity extends Equatable {
       description: description ?? this.description,
       public: public ?? this.public,
       status: status ?? this.status,
-      lawyerId: lawyerId ?? this.lawyerId,
-      lawyerName: lawyerName ?? this.lawyerName,
+      lawyerId: setLawyerIdNull ? null : (lawyerId ?? this.lawyerId),
+      lawyerName: setLawyerNameNull ? null : (lawyerName ?? this.lawyerName),
       clientId: clientId ?? this.clientId,
       clientName: clientName ?? this.clientName,
       clientEmail: clientEmail ?? this.clientEmail,

@@ -21,8 +21,8 @@ class RequestModel extends RequestEntity {
     required super.description,
     required super.public,
     required super.status,
-    required super.lawyerId,
-    required super.lawyerName,
+    super.lawyerId,
+    super.lawyerName,
     required super.clientId,
     required super.clientName,
     required super.clientEmail,
@@ -37,8 +37,8 @@ class RequestModel extends RequestEntity {
       description: json['descricao'] as String,
       public: json['publica'] as bool,
       status: json['status'] as String,
-      lawyerId: json['advogadoId'] as int,
-      lawyerName: json['advogadoNome'] as String,
+      lawyerId: json['advogadoId'] as int?,
+      lawyerName: json['advogadoNome'] as String?,
       clientId: json['clienteId'] as int,
       clientName: json['clienteNome'] as String,
       clientEmail: json['clienteEmail'] as String? ?? '',
@@ -54,8 +54,8 @@ class RequestModel extends RequestEntity {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'lawyerId': lawyerId,
-      'description': description,
+      'advogadoId': lawyerId,
+      'descricao': description,
       'publica': public,
     };
   }

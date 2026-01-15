@@ -23,7 +23,17 @@ class RequestsDataSourceImpl implements IRequestsDataSource {
   @override
   Future<Either<Failure, List<RequestModel>>> getAllPublicRequests() async {
     try {
-      var result = await _dio.get('/solicitacoes/publicas');
+      final failure = await _authDataSource.ensureAuth();
+      if (failure != null) {
+        return Left(failure);
+      }
+
+      var result = await _dio.get(
+        '/solicitacoes/publicas',
+        options: Options(
+          headers: {'Authorization': 'Bearer ${_authDataSource.authToken}'},
+        ),
+      );
 
       if (result.statusCode == 200) {
         final List<dynamic> data = result.data as List<dynamic>;
@@ -48,7 +58,7 @@ class RequestsDataSourceImpl implements IRequestsDataSource {
 
     try {
       var result = await _dio.get(
-        '/solicitacoes/advogado',
+        '/solicitacoes/para-mim',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -75,7 +85,7 @@ class RequestsDataSourceImpl implements IRequestsDataSource {
 
     try {
       var result = await _dio.get(
-        '/solicitacoes/cliente',
+        '/solicitacoes/minhas',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -102,7 +112,7 @@ class RequestsDataSourceImpl implements IRequestsDataSource {
 
     try {
       var result = await _dio.get(
-        '/solicitacoes/$requestId',
+        '/solicitacoes/$requestId/',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -149,8 +159,8 @@ class RequestsDataSourceImpl implements IRequestsDataSource {
 
     try {
       var result = await _dio.put(
-        '/solicitacoes/${request.id}',
-        data: request.toJson(),
+        '/solicitacoes/${request.id}/responder',
+        data: {'status': request.status},
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -159,10 +169,10 @@ class RequestsDataSourceImpl implements IRequestsDataSource {
       }
 
       return Left(
-        ServerFailure('Erro ao atualizar solicitação ${result.data}'),
+        ServerFailure('Erro ao responder solicitação ${result.data}'),
       );
     } catch (e) {
-      return Left(ServerFailure('Erro ao atualizar solicitação: $e'));
+      return Left(ServerFailure('Erro ao responder solicitação: $e'));
     }
   }
 

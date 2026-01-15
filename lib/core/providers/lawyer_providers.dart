@@ -15,7 +15,10 @@ final lawyerLocalDataSourceProvider = Provider<LawyerLocalDataSourceImpl>((
   ref,
 ) {
   final networkHandler = ref.watch(networkHandlerProvider);
-  return LawyerLocalDataSourceImpl(networkHandler);
+  return LawyerLocalDataSourceImpl(
+    networkHandler,
+    ref.read(authLocalDataSourceProvider),
+  );
 });
 
 final lawyerRepositoryProvider = Provider<LawyerRepository>((ref) {

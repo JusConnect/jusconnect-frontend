@@ -5,6 +5,8 @@ import 'package:jusconnect/core/pages/auth_selection_page.dart';
 import 'package:jusconnect/core/pages/home_page.dart';
 import 'package:jusconnect/features/auth/presentation/pages/login_page.dart';
 import 'package:jusconnect/features/auth/presentation/pages/register_page.dart';
+import 'package:jusconnect/features/customer/presentation/pages/client_home_page.dart';
+import 'package:jusconnect/features/lawyer/presentation/pages/lawyer_home_page.dart';
 import 'package:jusconnect/features/lawyer/presentation/pages/lawyer_login_page.dart';
 import 'package:jusconnect/features/lawyer/presentation/pages/lawyer_profile_edit_page.dart';
 import 'package:jusconnect/features/lawyer/presentation/pages/lawyer_profile_page.dart';
@@ -37,13 +39,14 @@ class MyApp extends StatelessWidget {
       home: const AuthSelectionPage(),
       routes: {
         '/home': (context) => const HomePage(),
+        '/client/home': (context) => const ClientHomePage(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/profile': (context) => const ProfilePage(),
         '/profile/edit': (context) => const ProfileEditPage(),
         '/lawyer/login': (context) => const LawyerLoginPage(),
         '/lawyer/register': (context) => const LawyerRegisterPage(),
-        '/lawyer/home': (context) => const LawyerProfilePage(),
+        '/lawyer/home': (context) => const LawyerHomePage(),
         '/lawyer/profile': (context) => const LawyerProfilePage(),
         '/lawyer/profile/edit': (context) => const LawyerProfileEditPage(),
       },

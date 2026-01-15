@@ -26,7 +26,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     ref.listen<AuthState>(authProvider, (previous, next) {
       if (next is AuthSuccessState) {
         Notifications.showSuccess(context, 'Login realizado com sucesso!');
-        Navigator.of(context).pushReplacementNamed('/home');
+        Navigator.of(context).pushReplacementNamed('/client/home');
       } else if (next is AuthErrorState) {
         Notifications.showError(context, next.message);
       }

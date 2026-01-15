@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:jusconnect/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:jusconnect/features/lawyer/data/models/lawyer_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:jusconnect/core/errors/failures.dart';
@@ -24,10 +25,13 @@ abstract class ILawyerDataSource {
 }
 
 class LawyerLocalDataSourceImpl implements ILawyerDataSource {
-  String? _authToken;
-  final Dio _dio;
+  String? get _authToken => _authDataSource.authToken;
+  set _authToken(String? token) => _authDataSource.authToken = token;
 
-  LawyerLocalDataSourceImpl(this._dio);
+  final Dio _dio;
+  final AuthDataSourceImpl _authDataSource;
+
+  LawyerLocalDataSourceImpl(this._dio, this._authDataSource);
 
   @override
   Future<Either<Failure, LawyerModel>> registerLawyer({
@@ -121,12 +125,17 @@ class LawyerLocalDataSourceImpl implements ILawyerDataSource {
     int? monthsInPlatform,
   }) async {
     try {
+      if (_authToken == null) {
+        return Left(AuthFailure('Usuário não autenticado'));
+      }
+
       var result = await _dio.get(
         '/advogados',
         queryParameters: {
           'areaAtuacao': lawyerArea,
           'tempoMinMeses': monthsInPlatform,
         },
+        options: Options(headers: {'Authorization': 'Bearer $_authToken'}),
       );
 
       if (result.statusCode == 200) {

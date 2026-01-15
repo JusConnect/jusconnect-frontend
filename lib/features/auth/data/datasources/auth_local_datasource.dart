@@ -129,4 +129,12 @@ class AuthDataSourceImpl implements IAuthDataSource {
   }
 
   String? get authToken => _authToken;
+  set authToken(String? token) => _authToken = token;
+
+  Future<Failure?> ensureAuth() async {
+    if (_authToken == null) {
+      return AuthFailure('Usuário não autenticado');
+    }
+    return null;
+  }
 }

@@ -98,92 +98,98 @@ class _LawyerProfilePageState extends ConsumerState<LawyerProfilePage> {
 
   Widget _buildProfileView(LawyerEntity lawyer) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: AppColors.primaryColor.withValues(
-                      alpha: 0.2,
-                    ),
-                    child: Icon(
-                      Icons.gavel,
-                      size: 50,
-                      color: AppColors.primaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    lawyer.name,
-                    style: GoogleFonts.poppins(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryColor,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.accentColor.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      lawyer.areaOfExpertise,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primaryColor,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.all(24.0),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Column(
+            children: [
+              Card(
+                margin: const EdgeInsets.symmetric(vertical: 16),
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
                     children: [
-                      Text(
-                        'Informações Profissionais',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundColor: AppColors.primaryColor.withValues(
+                          alpha: 0.2,
+                        ),
+                        child: Icon(
+                          Icons.gavel,
+                          size: 50,
+                          color: AppColors.primaryColor,
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () {
-                          Navigator.of(
-                            context,
-                          ).pushNamed('/lawyer/profile/edit');
-                        },
-                        tooltip: 'Editar',
-                        color: AppColors.primaryColor,
+                      const SizedBox(height: 16),
+                      Text(
+                        lawyer.name,
+                        style: GoogleFonts.poppins(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryColor,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.accentColor.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          lawyer.areaOfExpertise,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primaryColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Informações Profissionais',
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () {
+                              Navigator.of(
+                                context,
+                              ).pushNamed('/lawyer/profile/edit');
+                            },
+                            tooltip: 'Editar',
+                            color: AppColors.primaryColor,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _buildInfoSection(lawyer),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  _buildInfoSection(lawyer),
-                ],
+                ),
               ),
-            ),
+              if (lawyer.videoUrl != null) ...[
+                const SizedBox(height: 16),
+                _buildVideoSection(lawyer.videoUrl!),
+              ],
+            ],
           ),
-          if (lawyer.videoUrl != null) ...[
-            const SizedBox(height: 16),
-            _buildVideoSection(lawyer.videoUrl!),
-          ],
-        ],
+        ),
       ),
     );
   }
